@@ -1,0 +1,66 @@
+# Nginx configuration for Photo Timestamp Extractor
+# Place this file at: /etc/nginx/sites-available/photo-extractor
+# Then create symlink: ln -s /etc/nginx/sites-available/photo-extractor /etc/nginx/sites-enabled/
+
+# HTTP server (redirects to HTTPS after SSL setup)
+server {
+    listen 80;
+    server_name yourdomain.com www.yourdomain.com;
+
+    # Redirect to HTTPS (uncomment after SSL setup)
+    # return 301 https://$server_name$request_uri;
+
+    # For initial setup, use this:
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        
+        # Increase timeouts for large file uploads
+        proxy_connect_timeout 600;
+        proxy_send_timeout 600;
+        proxy_read_timeout 600;
+        send_timeout 600;
+        
+        # Increase body size for image uploads
+        client_max_body_size 100M;
+    }
+}
+
+# HTTPS server (uncomment and configure after SSL setup)
+# server {
+#     listen 443 ssl http2;
+#     server_name yourdomain.com www.yourdomain.com;
+#
+#     ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
+#     ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
+#     ssl_protocols TLSv1.2 TLSv1.3;
+#     ssl_ciphers HIGH:!aNULL:!MD5;
+#
+#     location / {
+#         proxy_pass http://localhost:3000;
+#         proxy_http_version 1.1;
+#         proxy_set_header Upgrade $http_upgrade;
+#         proxy_set_header Connection 'upgrade';
+#         proxy_set_header Host $host;
+#         proxy_set_header X-Real-IP $remote_addr;
+#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto $scheme;
+#         proxy_cache_bypass $http_upgrade;
+#         
+#         # Increase timeouts for large file uploads
+#         proxy_connect_timeout 600;
+#         proxy_send_timeout 600;
+#         proxy_read_timeout 600;
+#         send_timeout 600;
+#         
+#         # Increase body size for image uploads
+#         client_max_body_size 100M;
+#     }
+# }
